@@ -6,12 +6,22 @@ import hardware_setup
 from display import Display, debug_print
 from nfc_module import NFCModule
 from knopjes import create_buttons, menu_pressed, next_pressed, confirm_pressed
+<<<<<<< HEAD
 
+=======
+#testie
+>>>>>>> cf33189 (Initial commit voor Github map)
 # Globale variabelen
 DEBUG = True
 WEB_DELAY = 300
 ap_ip = "unknown"
 
+<<<<<<< HEAD
+=======
+menu_active = False
+
+
+>>>>>>> cf33189 (Initial commit voor Github map)
 # Initialiseer NFC-module
 nfc = NFCModule()
 
