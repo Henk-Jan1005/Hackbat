@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hackbat Webinterface</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  <h1>Hackbat Webinterface</h1>
+  <p>Kaartinformatie:<br>{{card_info}}</p>
+  <button onclick="triggerMfkey32()">Run mfkey32</button>
+  <script>
+    function triggerMfkey32() {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/?action=mfkey32", true);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+          document.body.innerHTML = xhr.responseText;
+        }
+      }
+      xhr.send();
+    }
+  </script>
+</body>
+</html>
