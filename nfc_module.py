@@ -4,20 +4,24 @@ from machine import I2C, Pin
 from i2c import PN532_I2C
 from display import Display, debug_print
 
+
+COMMAND_INLISTPASSIVETARGET = 0x4A
+
 class NFCModule:
     def __init__(self):
         self.i2c = I2C(0, scl=Pin(5), sda=Pin(4))
         self.pn532 = PN532_I2C(self.i2c, debug=True)
         self.pn532.SAM_configuration()
-        # Huidige kaartgegevens
+        self.cached_card_data = None  # Nieuwe cache voor volledige kaartdata
         self.current_card_uid = None
         self.current_card_atqa = None
         self.current_card_sak = None
         self.current_card_info = None
         self.current_card_type = None
+        # ... overige initialisaties zoals de PN532 setup
 
     def read_full_card(self):
-        """Leest de volledige kaart uit (MIFARE Classic 1K): UID, sector data, trailer."""
+        """Leest de volledige kaart uit (MIFARE Classic 1K)"""
         card_dump = {}
         try:
             uid = self.pn532.read_passive_target(timeout=1000)
@@ -66,18 +70,6 @@ class NFCModule:
             Display.update_status("Capture failed!")
             return None
 
-    def run_mfkey32(self):
-        """
-        Voert (dummy) mfkey32-aanval uit op de huidige kaartdata.
-        In een echte implementatie komt hier de brute force- of nested attack.
-        """
-        card_dump = self.read_full_card()
-        if card_dump is None:
-            return "Geen kaartdata beschikbaar voor mfkey32."
-        # Dummy resultaat: voorbeeldsleutels
-        result = {"key_a": "A0A1A2A3A4A5", "key_b": "B0B1B2B3B4B5"}
-        return json.dumps(result, indent=2)
-
     def emulate_card(self):
         if self.current_card_uid and self.current_card_atqa and self.current_card_sak:
             uid_str = ' '.join("{:02X}".format(x) for x in self.current_card_uid)
@@ -102,16 +94,18 @@ class NFCModule:
             Display.update_status("Geen kaart UID!")
 
     def process_card_detection(self, menu_active):
-        """Detecteert een kaart en werkt de globale kaartgegevens bij.
-           De parameter menu_active zorgt ervoor dat tijdens een menu-actieve status
-           er geen nieuwe kaart wordt ingelezen."""
         try:
+            # Als we al data hebben, slaan we een herlezing over
+            if self.cached_card_data is not None:
+                return
+
             if not self.pn532.listen_for_passive_target(timeout=500) or menu_active:
                 return
-            COMMAND_INLISTPASSIVETARGET = 0x4A
-            response = self.pn532.process_response(COMMAND_INLISTPASSIVETARGET, response_length=30, timeout=500)
+
+            response = self.pn532.process_response(COMMAND_INLISTPASSIVETARGET, 30, 500)
             if response is None or response[0] != 0x01:
                 return
+
             uid_len = response[5]
             if uid_len > 7:
                 raise RuntimeError("Kaart met te lange UID gevonden!")
@@ -129,7 +123,24 @@ class NFCModule:
                              "0x28": "MIFARE DESFire"}
             self.current_card_type = card_type_map.get(hex(self.current_card_sak), "Unknown")
             self.current_card_info = "UID: " + uid_str + "\nATQA: " + atqa_str + "\nType: " + self.current_card_type
+
+            # Lees en cache de volledige kaartdata, zodat deze niet constant opnieuw wordt gelezen
+            self.cached_card_data = self.read_full_card()
+
             Display.update_status(self.current_card_info)
             print("Found card with UID:", uid_str, "ATQA:", atqa_str, "Type:", self.current_card_type)
         except Exception as e:
             debug_print("Error reading card: " + str(e))
+
+    def run_mfkey32(self):
+        # Gebruik de gecachte kaartdata in plaats van opnieuw uitlezen
+        print("RUNNNING MFKEY32 ", self.cached_card_data)
+        if self.cached_card_data is None:
+            return "Geen kaartdata beschikbaar voor mfkey32."
+        # Dummy resultaat; in een echte implementatie gebruik je self.cached_card_data
+        result = {"key_a": "A0A1A2A3A4A5", "key_b": "B0B1B2B3B4B5"}
+        return result
+
+    def clear_cached_data(self):
+        # Roep deze functie aan bij 'discard' of als de kaart wordt verwijderd
+        self.cached_card_data = None

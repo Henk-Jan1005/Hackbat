@@ -33,15 +33,18 @@ def poll_for_card(timer):
 
 nfc_poll_timer.init(period=1000, mode=Timer.PERIODIC, callback=lambda t: micropython.schedule(poll_for_card, 0))
 
-# Heartbeat Timer
-heartbeat_timer = Timer(-1)
-heartbeat_timer.init(period=1000, mode=Timer.PERIODIC, callback=lambda t: debug_print("Heartbeat tick"))
+# # Heartbeat Timer
+# heartbeat_timer = Timer(-1)
+# heartbeat_timer.init(period=1000, mode=Timer.PERIODIC, callback=lambda t: debug_print("Heartbeat tick"))
 
 # Callback-functies voor de knoppen
 def discard_card():
     nfc.current_card_info = None
     nfc.current_card_type = None
+    # Leeg de gecachte data zodat een nieuwe kaart kan worden gedetecteerd
+    nfc.clear_cached_data()
     Display.show_ip(wifi.ap_ip)
+
 
 def emulate_card_callback():
     nfc.emulate_card()

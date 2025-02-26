@@ -61,7 +61,7 @@ class WiFiChip:
         Display.show_ip(self.ap_ip)
         return self.ap_ip
 
-    def process_uart(self, dummy):
+    def process_uart(self, dummy, *args, **kwargs):
         self.uart_proc_scheduled = False
         if self.uart_busy:
             debug_print("UART busy, skipping processing.")
@@ -98,12 +98,13 @@ class WiFiChip:
                         Display.show_connected()
                         
                         if "action=mfkey32" in tekst:
+                            print('ACTIONMFKEY IN TEXT')
                             if self.nfc:
                                 result = self.nfc.run_mfkey32()
                             else:
                                 result = "NFC module not set"
                             file_content = ("<html><head><title>mfkey32 Resultaat</title></head><body>"
-                                            "<h1>mfkey32 Resultaat</h1><pre>" + result +
+                                            "<h1>mfkey32 Resultaat</h1><pre>" + str(result) +
                                             "</pre><br><a href='/'>Terug</a></body></html>")
                         else:
                             if self.nfc and self.nfc.current_card_info:
