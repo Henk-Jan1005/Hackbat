@@ -1,25 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Hackbat Webinterface</title>
   <meta charset="utf-8">
+  <title>Hackbat Webinterface</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h1, h2 {
+      color: #333;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    .note {
+      font-size: 0.9em;
+      color: #555;
+    }
+  </style>
 </head>
 <body>
-  <h1>Hackbat testwebinterfacec</h1>
-  <p>Kaartinformatie:<br>{{card_info}}</p>
-  <button onclick="triggerMfkey32()">Run mfkey32</button>
-  <script>
-    function triggerMfkey32() {
-      var xhr = new XMLHttpRequest();
-      xhr.open("GET", "/?action=mfkey32", true);
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4 && xhr.status == 200) {
-          document.body.innerHTML = xhr.responseText;
-        }
-      }
-      xhr.send();
-    }
-  </script>
+  <h1>Hackbat Webinterface</h1>
+  <h2>Kaartinformatie</h2>
+  <!-- De server vervangt deze placeholder met een tabel in het volgende formaat:
+       <table>
+         <tr><th>Parameter</th><th>Waarde</th></tr>
+         <tr><td>UID</td><td>0BC8F903</td></tr>
+         <tr><td>NT</td><td>12345678</td></tr>
+         <tr><td>NR0</td><td>23456789</td></tr>
+         <tr><td>AR0</td><td>34567890</td></tr>
+         <tr><td>NT1</td><td>12345678</td></tr>
+         <tr><td>NR1</td><td>45678901</td></tr>
+         <tr><td>AR1</td><td>56789012</td></tr>
+       </table>
+  -->
+  <div id="cardinfo">
+    {{CARD_INFO}}
+  </div>
+  <p>
+    <a href="/carddata">Bekijk volledige kaartdata (JSON)</a>
+  </p>
+  <p class="note">
+    Kopieer de bovenstaande kaartdata en gebruik deze met je mfkey32-tool op je laptop.
+  </p>
 </body>
 </html>
